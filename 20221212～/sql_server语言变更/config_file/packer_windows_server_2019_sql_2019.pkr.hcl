@@ -57,8 +57,8 @@ source "azure-arm" "windows" {
   disk_caching_type                 = "ReadWrite"
   image_offer                       = "sql2019-ws2019"
   image_publisher                   = "MicrosoftSQLServer"
-  image_sku                         = "standard-gen2" # use this when production.
-  # image_sku                         = "sqldev-gen2" # free license
+  # image_sku                         = "standard-gen2" # use this when production.
+  image_sku                         = "sqldev-gen2" # free license
   image_version                     = "15.0.221108"
   location                          = "${var.location}"
   managed_image_name                = "SQL-Server-2019_${var.date_string}"
@@ -66,7 +66,8 @@ source "azure-arm" "windows" {
   os_type                           = "Windows"
   subscription_id                   = "${var.subscription_id}"
   tenant_id                         = "${var.tenant_id}"
-  vm_size                           = "Standard_B4ms"
+  vm_size                           = "Standard_B2s"
+  temp_compute_name                 = "packer-vm01"
   winrm_insecure                    = true
   winrm_timeout                     = "20m"
   winrm_use_ssl                     = true
@@ -79,52 +80,10 @@ source "azure-arm" "windows" {
 build {
   sources = ["source.azure-arm.windows"]
 
-  provisioner "file" {
-    destination = "C:/"
-    source      = "./scripts/01_disable_page_on_D.ps1"
+
+  provisioner "windows-shell" {
+    script = "./scripts/rebuild_database.cmd.cmd"
   }
-
-  provisioner "file" {
-    destination = "C:/"
-    source      = "./scripts/02_recover_page_on_F.ps1"
-  }
-
-  provisioner "file" {
-    destination = "C:/"
-    source      = "./scripts/03_format_drives.ps1"
-  }
-
-  provisioner "file" {
-    destination = "C:/"
-    source      = "./scripts/ja-JP-default.reg"
-  }
-
-  provisioner "file" {
-    destination = "C:/"
-    source      = "./scripts/ja-JP-welcome.reg"
-  }
-
-  provisioner "powershell" {
-    script  = "./scripts/setup.ps1"
-  }
-
-  provisioner "windows-restart" {}
-
-  # provisioner "windows-update" {}
-
-  # provisioner "windows-restart" {}
-
-  # provisioner "powershell" {
-  #   script  = "./scripts/uninstall-SqlServer.ps1"
-  # }
-
-  # provisioner "powershell" {
-  #   script  = "./scripts/Install-SqlServer.ps1"
-  # }
-
-  # provisioner "powershell" {
-  #   script  = "./scripts/ssms.ps1"
-  # }
 
   provisioner "powershell" {
     script = "./scripts/sysprep.ps1"
